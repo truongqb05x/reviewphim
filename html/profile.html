@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tôi - CineShorts</title>
+    <style>
+        :root {
+            --primary-color: #ff2e63;
+            --secondary-color: #08d9d6;
+            --bg-color: #000;
+            --text-color: #fff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --card-bg: #1a1a1a;
+            --nav-bg: #000;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --text-muted: rgba(0, 0, 0, 0.7);
+            --card-bg: #fff;
+            --nav-bg: #fff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .search-icon {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .search-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            min-height: 100vh;
+            padding: 80px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Profile Section */
+        .profile-container {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin: 0 auto 15px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .profile-username {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .profile-bio {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        
+        .stat:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 46, 99, 0.4);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+        
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            padding-bottom: 177.78%; /* Tỷ lệ 9:16 */
+            overflow: hidden;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .video-thumbnail:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-play-count {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            font-size: 12px;
+            background-color: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Login/Signup Section */
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 160px);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .auth-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        /* Skeleton Loading */
+        .skeleton {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* Footer (Navigation Bar) */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 3px;
+        }
+        
+        .active {
+            color: var(--primary-color);
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 101;
+            color: var(--text-color);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">CineShorts</div>
+        <div class="search-icon">
+            <i class="fas fa-search"></i>
+        </div>
+    </header>
+    
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Loading Skeleton -->
+        <div class="profile-container hidden" id="loadingSkeleton">
+            <div class="profile-avatar skeleton" style="border: none;"></div>
+            <div class="profile-username skeleton" style="width: 150px; height: 24px; margin: 10px auto;"></div>
+            <div class="profile-bio skeleton" style="height: 40px; width: 80%; margin-bottom: 15px;"></div>
+            <div class="profile-stats">
+                <div class="stat skeleton" style="width: 60px; height: 40px;"></div>
+                <div class="stat skeleton" style="width: 60px; height: 40px;"></div>
+                <div class="stat skeleton" style="width: 60px; height: 40px;"></div>
+            </div>
+            <div class="skeleton btn" style="width: 120px; height: 36px; margin: 15px auto;"></div>
+            <div class="video-grid">
+                <div class="video-thumbnail skeleton"></div>
+                <div class="video-thumbnail skeleton"></div>
+                <div class="video-thumbnail skeleton"></div>
+                <div class="video-thumbnail skeleton"></div>
+                <div class="video-thumbnail skeleton"></div>
+                <div class="video-thumbnail skeleton"></div>
+            </div>
+        </div>
+        
+        <!-- Profile Content -->
+        <div class="profile-container hidden" id="profileContainer">
+            <img class="profile-avatar" src="https://randomuser.me/api/portraits/men/45.jpg" alt="Avatar">
+            <div class="profile-username">@phimhay247</div>
+            <div class="profile-bio">Yêu phim ảnh | Review phim ngắn | Sci-fi & Hành động là chân ái 🎬</div>
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-number">150</span>
+                    <span class="stat-label">Video</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">10.2k</span>
+                    <span class="stat-label">Theo dõi</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">50.4k</span>
+                    <span class="stat-label">Thích</span>
+                </div>
+            </div>
+            <button class="btn edit-profile-btn">Chỉnh sửa hồ sơ</button>
+            <div class="video-grid">
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 12.5k</span>
+                </div>
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 8.3k</span>
+                </div>
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 15.7k</span>
+                </div>
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 9.1k</span>
+                </div>
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 7.2k</span>
+                </div>
+                <div class="video-thumbnail">
+                    <img src="https://placehold.co/300x533" alt="Video thumbnail">
+                    <span class="video-play-count"><i class="fas fa-play"></i> 11.8k</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auth Content -->
+        <div class="auth-container hidden" id="authContainer">
+            <h2 class="auth-title">Tham gia CineShorts ngay!</h2>
+            <div class="auth-buttons">
+                <button class="btn signup-btn">Đăng ký</button>
+                <button class="btn btn-outline login-btn">Đăng nhập</button>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer (Navigation Bar) -->
+    <nav class="nav-bar">
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Trang chủ</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-compass"></i></div>
+            <span>Khám phá</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-plus-square"></i></div>
+            <span>Tạo video</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-inbox"></i></div>
+            <span>Hộp thư</span>
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <span>Tôi</span>
+        </div>
+    </nav>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const profileContainer = document.getElementById('profileContainer');
+            const authContainer = document.getElementById('authContainer');
+            const loadingSkeleton = document.getElementById('loadingSkeleton');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // Simulate login state (for demo)
+            let isLoggedIn = false; // Change to true to see logged in state
+            
+            // Theme management
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon();
+            
+            // Show loading skeleton first
+            loadingSkeleton.classList.remove('hidden');
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                loadingSkeleton.classList.add('hidden');
+                
+                if (isLoggedIn) {
+                    profileContainer.classList.remove('hidden');
+                    authContainer.classList.add('hidden');
+                } else {
+                    profileContainer.classList.add('hidden');
+                    authContainer.classList.remove('hidden');
+                }
+            }, 1500);
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Button event handlers
+            document.querySelector('.signup-btn')?.addEventListener('click', () => {
+                showToast('Chuyển đến trang đăng ký');
+            });
+            
+            document.querySelector('.login-btn')?.addEventListener('click', () => {
+                showToast('Chuyển đến trang đăng nhập');
+            });
+            
+            document.querySelector('.edit-profile-btn')?.addEventListener('click', () => {
+                showToast('Chuyển đến trang chỉnh sửa hồ sơ');
+            });
+            
+            // Nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    showToast(`Chuyển đến ${this.querySelector('span').textContent}`);
+                });
+            });
+            
+            // Video thumbnails
+            document.querySelectorAll('.video-thumbnail').forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    showToast('Mở video xem');
+                });
+            });
+            
+            // Functions
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon();
+            }
+            
+            function updateThemeIcon() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                themeToggle.innerHTML = currentTheme === 'dark' 
+                    ? '<i class="fas fa-moon"></i>' 
+                    : '<i class="fas fa-sun"></i>';
+            }
+            
+            function showToast(message) {
+                // In a real app, you would use a proper toast notification
+                console.log(message);
+                alert(message); // Placeholder for demo
+            }
+        });
+    </script>
+</body>
+</html>

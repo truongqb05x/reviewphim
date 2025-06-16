@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineShorts - Khám phá thể loại phim</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff2e63;
+        }
+        
+        .search-icon {
+            font-size: 20px;
+        }
+        
+        /* Categories Grid */
+        .categories-container {
+            padding: 70px 15px 80px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .category-card {
+            position: relative;
+            height: 180px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .category-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+        
+        .category-name {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        
+        /* Video Player (hidden by default) */
+        .video-player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 200;
+            display: none;
+        }
+        
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 3px;
+        }
+        
+        .active {
+            color: #ff2e63;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">CineShorts</div>
+        <div class="search-icon">
+            <i class="fas fa-search"></i>
+        </div>
+    </header>
+    
+    <!-- Categories Grid -->
+    <div class="categories-container">
+        <!-- Hành Động -->
+        <div class="category-card" onclick="showCategoryVideos('Hành Động')">
+            <img src="https://source.unsplash.com/random/300x300/?action,movie" class="category-bg">
+            <div class="category-name">Hành Động</div>
+        </div>
+        
+        <!-- Lãng Mạn -->
+        <div class="category-card" onclick="showCategoryVideos('Lãng Mạn')">
+            <img src="https://source.unsplash.com/random/300x300/?romance,movie" class="category-bg">
+            <div class="category-name">Lãng Mạn</div>
+        </div>
+        
+        <!-- Kinh Dị -->
+        <div class="category-card" onclick="showCategoryVideos('Kinh Dị')">
+            <img src="https://source.unsplash.com/random/300x300/?horror,movie" class="category-bg">
+            <div class="category-name">Kinh Dị</div>
+        </div>
+        
+        <!-- Hài -->
+        <div class="category-card" onclick="showCategoryVideos('Hài')">
+            <img src="https://source.unsplash.com/random/300x300/?comedy,movie" class="category-bg">
+            <div class="category-name">Hài</div>
+        </div>
+        
+        <!-- Khoa Học Viễn Tưởng -->
+        <div class="category-card" onclick="showCategoryVideos('Sci-Fi')">
+            <img src="https://source.unsplash.com/random/300x300/?scifi,movie" class="category-bg">
+            <div class="category-name">Sci-Fi</div>
+        </div>
+        
+        <!-- Hoạt Hình -->
+        <div class="category-card" onclick="showCategoryVideos('Hoạt Hình')">
+            <img src="https://source.unsplash.com/random/300x300/?animation,movie" class="category-bg">
+            <div class="category-name">Hoạt Hình</div>
+        </div>
+    </div>
+    
+    <!-- Video Player (hidden by default) -->
+    <div class="video-player-container" id="videoPlayer">
+        <!-- Progress bars -->
+        <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+        </div>
+        
+        <video autoplay muted loop id="categoryVideo">
+            <source src="" type="video/mp4">
+        </video>
+        
+        <!-- Video Info -->
+        <div class="video-info">
+            <div class="video-meta">
+                <span id="videoAuthor">@phimhay247</span>
+                <span style="margin: 0 5px">•</span>
+                <span><i class="fas fa-star" style="color: gold; margin-right: 3px;"></i><span id="videoRating">8.5/10</span></span>
+            </div>
+            <h3 class="video-title" id="videoTitle">Tiêu đề video</h3>
+            <p class="video-desc" id="videoDesc">Mô tả video sẽ hiển thị ở đây...</p>
+            <div class="video-tags" id="videoTags">
+                <!-- Tags will be added by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="action-btn">
+                <div class="avatar">
+                    <img id="videoAvatar" src="https://randomuser.me/api/portraits/women/44.jpg" width="40" height="40" style="border-radius: 50%;">
+                </div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-heart" style="color: #ff2e63;"></i>
+                </div>
+                <span class="action-count" id="likeCount">12.4k</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <span class="action-count" id="commentCount">1.2k</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-share"></i>
+                </div>
+                <span class="action-count" id="shareCount">543</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon" onclick="closeVideoPlayer()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Trang chủ</span>
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-compass"></i></div>
+            <span>Khám phá</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-plus-square"></i></div>
+            <span>Tạo video</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-inbox"></i></div>
+            <span>Hộp thư</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <span>Tôi</span>
+        </div>
+    </nav>
+    
+    <script>
+        // Category videos data
+        const categoryVideos = {
+            "Hành Động": [
+                {
+                    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-action-movie-with-explosions-34533-large.mp4",
+                    author: "@phimhay247",
+                    rating: "8.5/10",
+                    title: "John Wick 4 - Màn trả thù đẫm máu",
+                    desc: "John Wick trở lại với những pha hành động mãn nhãn và cảnh quay đẹp mắt...",
+                    tags: ["#JohnWick", "#HànhĐộng", "#KeanuReeves"],
+                    likes: "15.2k",
+                    comments: "2.1k",
+                    shares: "876",
+                    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+                },
+                {
+                    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-runs-past-camera-in-the-dark-34532-large.mp4",
+                    author: "@phimchieurap",
+                    rating: "9.0/10",
+                    title: "Mission: Impossible 7 - Tom Cruise thách thức trọng lực",
+                    desc: "Những cảnh quay nguy hiểm thực hiện bởi chính Tom Cruise...",
+                    tags: ["#MissionImpossible", "#TomCruise", "#Stunt"],
+                    likes: "18.7k",
+                    comments: "3.4k",
+                    shares: "1.2k",
+                    avatar: "https://randomuser.me/api/portraits/women/65.jpg"
+                }
+            ],
+            "Lãng Mạn": [
+                {
+                    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-couple-in-love-at-a-train-station-34565-large.mp4",
+                    author: "@phimtinhcam",
+                    rating: "7.8/10",
+                    title: "The Notebook - Câu chuyện tình yêu kinh điển",
+                    desc: "Bộ phim chuyển thể từ tiểu thuyết nổi tiếng với diễn xuất xuất sắc...",
+                    tags: ["#TheNotebook", "#TìnhYêu", "#RyanGosling"],
+                    likes: "22.1k",
+                    comments: "4.3k",
+                    shares: "2.5k",
+                    avatar: "https://randomuser.me/api/portraits/women/33.jpg"
+                }
+            ],
+            "Kinh Dị": [
+                {
+                    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-horror-empty-house-34531-large.mp4",
+                    author: "@kin_di_247",
+                    rating: "8.1/10",
+                    title: "The Conjuring - Ám ảnh kinh hoàng",
+                    desc: "Dựa trên câu chuyện có thật về hai vợ chồng nhà Warren...",
+                    tags: ["#TheConjuring", "#KinhDị", "#JamesWan"],
+                    likes: "13.5k",
+                    comments: "1.8k",
+                    shares: "945",
+                    avatar: "https://randomuser.me/api/portraits/men/75.jpg"
+                }
+            ]
+        };
+        
+        // Show videos for selected category
+        function showCategoryVideos(category) {
+            const videos = categoryVideos[category] || [];
+            if (videos.length === 0) {
+                alert(`Hiện chưa có video nào trong thể loại ${category}`);
+                return;
+            }
+            
+            // Show video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.style.display = 'block';
+            
+            // Load first video in category
+            currentCategory = category;
+            currentVideoIndex = 0;
+            loadVideo(videos[0]);
+            
+            // Setup swipe events
+            setupVideoSwipe();
+        }
+        
+        // Current video state
+        let currentCategory = '';
+        let currentVideoIndex = 0;
+        
+        // Load video data into player
+        function loadVideo(videoData) {
+            document.getElementById('categoryVideo').src = videoData.videoUrl;
+            document.getElementById('videoAuthor').textContent = videoData.author;
+            document.getElementById('videoRating').textContent = videoData.rating;
+            document.getElementById('videoTitle').textContent = videoData.title;
+            document.getElementById('videoDesc').textContent = videoData.desc;
+            document.getElementById('likeCount').textContent = videoData.likes;
+            document.getElementById('commentCount').textContent = videoData.comments;
+            document.getElementById('shareCount').textContent = videoData.shares;
+            document.getElementById('videoAvatar').src = videoData.avatar;
+            
+            // Clear and add tags
+            const tagsContainer = document.getElementById('videoTags');
+            tagsContainer.innerHTML = '';
+            videoData.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+            
+            // Reset progress bars
+            const progressFills = document.querySelectorAll('#videoPlayer .progress-fill');
+            progressFills.forEach((fill, index) => {
+                fill.style.width = index === 0 ? '0%' : '0%';
+            });
+            
+            // Start progress bar
+            startProgressBar();
+        }
+        
+        // Video progress bar
+        let progressInterval;
+        
+        function startProgressBar() {
+            clearInterval(progressInterval);
+            
+            const currentFill = document.querySelectorAll('#videoPlayer .progress-fill')[0];
+            currentFill.style.width = '0%';
+            
+            progressInterval = setInterval(function() {
+                let width = parseFloat(currentFill.style.width) || 0;
+                if (width < 100) {
+                    width += 0.5;
+                    currentFill.style.width = width + '%';
+                } else {
+                    clearInterval(progressInterval);
+                    // Auto play next video when current ends
+                    playNextVideo();
+                }
+            }, 100);
+        }
+        
+        // Video navigation
+        function playNextVideo() {
+            const videos = categoryVideos[currentCategory] || [];
+            if (videos.length === 0) return;
+            
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            loadVideo(videos[currentVideoIndex]);
+        }
+        
+        function playPreviousVideo() {
+            const videos = categoryVideos[currentCategory] || [];
+            if (videos.length === 0) return;
+            
+            currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+            loadVideo(videos[currentVideoIndex]);
+        }
+        
+        // Close video player
+        function closeVideoPlayer() {
+            document.getElementById('videoPlayer').style.display = 'none';
+            clearInterval(progressInterval);
+        }
+        
+        // Setup swipe events for video player
+        function setupVideoSwipe() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            let startY;
+            
+            videoPlayer.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            videoPlayer.addEventListener('touchmove', (e) => {
+                if (!startY) return;
+                
+                const y = e.touches[0].clientY;
+                const diff = y - startY;
+                
+                // Prevent scrolling if swiping up/down on video
+                if (Math.abs(diff) > 10) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            videoPlayer.addEventListener('touchend', (e) => {
+                if (!startY) return;
+                
+                const y = e.changedTouches[0].clientY;
+                const diff = y - startY;
+                
+                // Swipe down (next video)
+                if (diff > 50) {
+                    playNextVideo();
+                } 
+                // Swipe up (previous video)
+                else if (diff < -50) {
+                    playPreviousVideo();
+                }
+                
+                startY = null;
+            }, { passive: true });
+        }
+    </script>
+</body>
+</html>

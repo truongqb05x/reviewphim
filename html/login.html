@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - CineShorts</title>
+    <style>
+        :root {
+            --primary-color: #ff2e63;
+            --secondary-color: #08d9d6;
+            --bg-color: #000;
+            --text-color: #fff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --card-bg: #1a1a1a;
+            --nav-bg: #000;
+            --input-bg: #2a2a2a;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --text-muted: rgba(0, 0, 0, 0.7);
+            --card-bg: #fff;
+            --nav-bg: #fff;
+            --input-bg: #f0f0f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .back-icon {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .back-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Main Content */
+        .auth-page {
+            min-height: 100vh;
+            padding: 100px 20px 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Auth Container */
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Auth Tabs */
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+            color: var(--text-muted);
+        }
+        
+        .auth-tab.active {
+            color: var(--primary-color);
+        }
+        
+        .auth-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        /* Auth Content */
+        .auth-content {
+            padding: 30px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .auth-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .auth-title {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        
+        /* Form Styles */
+        .auth-form {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 38px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        
+        .forgot-password {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            text-decoration: none;
+        }
+        
+        .forgot-password:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Auth Buttons */
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e61e4d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 46, 99, 0.4);
+        }
+        
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .divider::before {
+            margin-right: 10px;
+        }
+        
+        .divider::after {
+            margin-left: 10px;
+        }
+        
+        /* Social Login */
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--input-bg);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-2px);
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 101;
+            color: var(--text-color);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="back-icon" id="backButton">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="logo">CineShorts</div>
+        <div></div> <!-- Empty div for spacing -->
+    </header>
+    
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Main Content -->
+    <main class="auth-page">
+        <div class="auth-container">
+            <!-- Auth Tabs -->
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Đăng nhập</div>
+                <div class="auth-tab" data-tab="signup">Đăng ký</div>
+            </div>
+            
+            <!-- Auth Content -->
+            <div class="auth-content">
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="auth-header">
+                        <div class="auth-logo">CineShorts</div>
+                        <h2 class="auth-title">Chào mừng trở lại</h2>
+                        <p class="auth-subtitle">Đăng nhập để tiếp tục trải nghiệm</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginEmail" class="form-label">Email hoặc tên đăng nhập</label>
+                        <input type="text" id="loginEmail" class="form-input" placeholder="Nhập email hoặc tên đăng nhập" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu" required>
+                        <i class="fas fa-eye password-toggle" id="toggleLoginPassword"></i>
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                    </div>
+                    
+                    <button type="submit" class="auth-btn btn-primary">Đăng nhập</button>
+                    
+                    <div class="divider">hoặc tiếp tục với</div>
+                    
+                    <div class="social-login">
+                        <div class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="signupForm" class="auth-form">
+                    <div class="auth-header">
+                        <div class="auth-logo">CineShorts</div>
+                        <h2 class="auth-title">Tạo tài khoản mới</h2>
+                        <p class="auth-subtitle">Bắt đầu hành trình của bạn ngay hôm nay</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupUsername" class="form-label">Tên đăng nhập</label>
+                        <input type="text" id="signupUsername" class="form-input" placeholder="Nhập tên đăng nhập" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupEmail" class="form-label">Email</label>
+                        <input type="email" id="signupEmail" class="form-input" placeholder="Nhập email của bạn" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" id="signupPassword" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required minlength="6">
+                        <i class="fas fa-eye password-toggle" id="toggleSignupPassword"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                        <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Nhập lại mật khẩu" required>
+                        <i class="fas fa-eye password-toggle" id="toggleSignupConfirmPassword"></i>
+                    </div>
+                    
+                    <button type="submit" class="auth-btn btn-primary">Đăng ký</button>
+                    
+                    <div class="divider">hoặc tiếp tục với</div>
+                    
+                    <div class="social-login">
+                        <div class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const backButton = document.getElementById('backButton');
+            const themeToggle = document.getElementById('themeToggle');
+            const authTabs = document.querySelectorAll('.auth-tab');
+            const authForms = document.querySelectorAll('.auth-form');
+            
+            // Password toggles
+            const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+            const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+            const toggleSignupConfirmPassword = document.getElementById('toggleSignupConfirmPassword');
+            
+            // Theme management
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon();
+            
+            // Tab switching
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding form
+                    authForms.forEach(form => {
+                        form.classList.remove('active');
+                        if (form.id === `${tabId}Form`) {
+                            setTimeout(() => form.classList.add('active'), 10);
+                        }
+                    });
+                });
+            });
+            
+            // Back button
+            backButton.addEventListener('click', function() {
+                window.history.back();
+            });
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Password toggle functionality
+            toggleLoginPassword.addEventListener('click', function() {
+                togglePassword('loginPassword', toggleLoginPassword);
+            });
+            
+            toggleSignupPassword.addEventListener('click', function() {
+                togglePassword('signupPassword', toggleSignupPassword);
+            });
+            
+            toggleSignupConfirmPassword.addEventListener('click', function() {
+                togglePassword('signupConfirmPassword', toggleSignupConfirmPassword);
+            });
+            
+            // Form submissions
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                // Validate and login
+                console.log('Login attempt with:', { email, password });
+                showToast('Đang đăng nhập...');
+                
+                // Simulate login
+                setTimeout(() => {
+                    showToast('Đăng nhập thành công!');
+                    window.location.href = 'profile.html'; // Redirect to profile page
+                }, 1500);
+            });
+            
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('signupUsername').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+                
+                // Validate
+                if (password !== confirmPassword) {
+                    showToast('Mật khẩu không khớp!');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showToast('Mật khẩu phải có ít nhất 6 ký tự!');
+                    return;
+                }
+                
+                console.log('Signup attempt with:', { username, email, password });
+                showToast('Đang tạo tài khoản...');
+                
+                // Simulate signup
+                setTimeout(() => {
+                    showToast('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+                    
+                    // Switch to login form
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    document.querySelector('[data-tab="login"]').classList.add('active');
+                    
+                    authForms.forEach(form => form.classList.remove('active'));
+                    document.getElementById('loginForm').classList.add('active');
+                    
+                    // Auto-fill login form
+                    document.getElementById('loginEmail').value = email;
+                    document.getElementById('loginPassword').value = password;
+                }, 1500);
+            });
+            
+            // Functions
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon();
+            }
+            
+            function updateThemeIcon() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                themeToggle.innerHTML = currentTheme === 'dark' 
+                    ? '<i class="fas fa-moon"></i>' 
+                    : '<i class="fas fa-sun"></i>';
+            }
+            
+            function togglePassword(inputId, icon) {
+                const input = document.getElementById(inputId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+            
+            function showToast(message) {
+                // In a real app, you would use a proper toast notification
+                console.log(message);
+                alert(message); // Placeholder for demo
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+CREATE TABLE videos (
+    video_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    video_url VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE tags (
+    tag_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE video_tags (
+    video_id BIGINT,
+    tag_id BIGINT,
+    PRIMARY KEY (video_id, tag_id),
+    FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(tag_id) ON DELETE CASCADE
+);

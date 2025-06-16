@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineShorts - Lịch sử xem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff2e63;
+        }
+        
+        .search-icon {
+            font-size: 20px;
+        }
+        
+        /* History List */
+        .history-container {
+            padding: 70px 15px 80px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+        }
+        
+        .history-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .clear-history {
+            color: #ff2e63;
+            font-size: 14px;
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .history-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .history-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .history-thumbnail {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        
+        .history-info {
+            padding: 8px 5px;
+        }
+        
+        .history-video-title {
+            font-size: 14px;
+            margin-bottom: 3px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .history-meta {
+            font-size: 12px;
+            opacity: 0.7;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-watched-time {
+            position: absolute;
+            bottom: 45px;
+            right: 5px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        /* Video Player (hidden by default) */
+        .video-player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 200;
+            display: none;
+        }
+        
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 3px;
+        }
+        
+        .active {
+            color: #ff2e63;
+        }
+        
+        /* Progress Bar (for video player) */
+        .progress-container {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            padding: 0 10px;
+            z-index: 10;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .progress-bar {
+            height: 2px;
+            background-color: rgba(255,255,255,0.3);
+            flex-grow: 1;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #fff;
+            width: 0%;
+        }
+        
+        /* Video Info (for video player) */
+        .video-info {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            max-width: 70%;
+            z-index: 10;
+        }
+        
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .video-meta {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .video-desc {
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .video-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            background-color: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        /* Action Buttons (for video player) */
+        .action-buttons {
+            position: absolute;
+            right: 20px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+        
+        .action-count {
+            font-size: 12px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-bottom: 5px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">CineShorts</div>
+        <div class="search-icon">
+            <i class="fas fa-search"></i>
+        </div>
+    </header>
+    
+    <!-- History List -->
+    <div class="history-container">
+        <div class="history-header">
+            <h2 class="history-title">Lịch sử xem</h2>
+            <button class="clear-history" onclick="clearHistory()">
+                <i class="fas fa-trash-alt"></i> Xóa lịch sử
+            </button>
+        </div>
+        
+        <div class="history-list" id="historyList">
+            <!-- History items will be added by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Video Player (hidden by default) -->
+    <div class="video-player-container" id="videoPlayer">
+        <!-- Progress bars -->
+        <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+        </div>
+        
+        <video autoplay muted loop id="historyVideo">
+            <source src="" type="video/mp4">
+        </video>
+        
+        <!-- Video Info -->
+        <div class="video-info">
+            <div class="video-meta">
+                <span id="videoAuthor">@phimhay247</span>
+                <span style="margin: 0 5px">•</span>
+                <span><i class="fas fa-star" style="color: gold; margin-right: 3px;"></i><span id="videoRating">8.5/10</span></span>
+            </div>
+            <h3 class="video-title" id="videoTitle">Tiêu đề video</h3>
+            <p class="video-desc" id="videoDesc">Mô tả video sẽ hiển thị ở đây...</p>
+            <div class="video-tags" id="videoTags">
+                <!-- Tags will be added by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="action-btn">
+                <div class="avatar">
+                    <img id="videoAvatar" src="https://randomuser.me/api/portraits/women/44.jpg" width="40" height="40" style="border-radius: 50%;">
+                </div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-heart" style="color: #ff2e63;"></i>
+                </div>
+                <span class="action-count" id="likeCount">12.4k</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <span class="action-count" id="commentCount">1.2k</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">
+                    <i class="fas fa-share"></i>
+                </div>
+                <span class="action-count" id="shareCount">543</span>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon" onclick="closeVideoPlayer()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Trang chủ</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-compass"></i></div>
+            <span>Khám phá</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-plus-square"></i></div>
+            <span>Tạo video</span>
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-history"></i></div>
+            <span>Lịch sử</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <span>Tôi</span>
+        </div>
+    </nav>
+    
+    <script>
+        // Sample history data (in real app, this would come from localStorage or API)
+        let historyData = [
+            {
+                id: 1,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-action-movie-with-explosions-34533-large.mp4",
+                thumbnail: "https://source.unsplash.com/random/300x300/?action,movie",
+                author: "@phimhay247",
+                rating: "8.5/10",
+                title: "John Wick 4 - Màn trả thù đẫm máu",
+                desc: "John Wick trở lại với những pha hành động mãn nhãn và cảnh quay đẹp mắt...",
+                tags: ["#JohnWick", "#HànhĐộng", "#KeanuReeves"],
+                likes: "15.2k",
+                comments: "2.1k",
+                shares: "876",
+                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+                watchedAt: "2 giờ trước",
+                watchedProgress: 85
+            },
+            {
+                id: 2,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-couple-in-love-at-a-train-station-34565-large.mp4",
+                thumbnail: "https://source.unsplash.com/random/300x300/?romance,movie",
+                author: "@phimtinhcam",
+                rating: "7.8/10",
+                title: "The Notebook - Câu chuyện tình yêu kinh điển",
+                desc: "Bộ phim chuyển thể từ tiểu thuyết nổi tiếng với diễn xuất xuất sắc...",
+                tags: ["#TheNotebook", "#TìnhYêu", "#RyanGosling"],
+                likes: "22.1k",
+                comments: "4.3k",
+                shares: "2.5k",
+                avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+                watchedAt: "Hôm qua",
+                watchedProgress: 100
+            },
+            {
+                id: 3,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-horror-empty-house-34531-large.mp4",
+                thumbnail: "https://source.unsplash.com/random/300x300/?horror,movie",
+                author: "@kin_di_247",
+                rating: "8.1/10",
+                title: "The Conjuring - Ám ảnh kinh hoàng",
+                desc: "Dựa trên câu chuyện có thật về hai vợ chồng nhà Warren...",
+                tags: ["#TheConjuring", "#KinhDị", "#JamesWan"],
+                likes: "13.5k",
+                comments: "1.8k",
+                shares: "945",
+                avatar: "https://randomuser.me/api/portraits/men/75.jpg",
+                watchedAt: "3 ngày trước",
+                watchedProgress: 45
+            },
+            {
+                id: 4,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-runs-past-camera-in-the-dark-34532-large.mp4",
+                thumbnail: "https://source.unsplash.com/random/300x300/?action,movie2",
+                author: "@phimchieurap",
+                rating: "9.0/10",
+                title: "Mission: Impossible 7 - Tom Cruise thách thức trọng lực",
+                desc: "Những cảnh quay nguy hiểm thực hiện bởi chính Tom Cruise...",
+                tags: ["#MissionImpossible", "#TomCruise", "#Stunt"],
+                likes: "18.7k",
+                comments: "3.4k",
+                shares: "1.2k",
+                avatar: "https://randomuser.me/api/portraits/women/65.jpg",
+                watchedAt: "1 tuần trước",
+                watchedProgress: 72
+            }
+        ];
+        
+        // Load history data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHistoryList();
+            
+            // Load from localStorage if available
+            const savedHistory = localStorage.getItem('videoHistory');
+            if (savedHistory) {
+                historyData = JSON.parse(savedHistory);
+                renderHistoryList();
+            }
+        });
+        
+        // Render history list
+        function renderHistoryList() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (historyData.length === 0) {
+                historyList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 20px;">Bạn chưa xem video nào gần đây</p>';
+                return;
+            }
+            
+            historyData.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.onclick = () => playHistoryVideo(item);
+                
+                historyItem.innerHTML = `
+                    <img src="${item.thumbnail}" class="history-thumbnail">
+                    <div class="history-watched-time">${item.watchedAt}</div>
+                    <div class="history-info">
+                        <div class="history-video-title">${item.title}</div>
+                        <div class="history-meta">
+                            <span>${item.author}</span>
+                            <span><i class="fas fa-star" style="color: gold; margin-right: 2px;"></i>${item.rating}</span>
+                        </div>
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Play video from history
+        function playHistoryVideo(videoData) {
+            // Show video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.style.display = 'block';
+            
+            // Load video data
+            document.getElementById('historyVideo').src = videoData.videoUrl;
+            document.getElementById('videoAuthor').textContent = videoData.author;
+            document.getElementById('videoRating').textContent = videoData.rating;
+            document.getElementById('videoTitle').textContent = videoData.title;
+            document.getElementById('videoDesc').textContent = videoData.desc;
+            document.getElementById('likeCount').textContent = videoData.likes;
+            document.getElementById('commentCount').textContent = videoData.comments;
+            document.getElementById('shareCount').textContent = videoData.shares;
+            document.getElementById('videoAvatar').src = videoData.avatar;
+            
+            // Clear and add tags
+            const tagsContainer = document.getElementById('videoTags');
+            tagsContainer.innerHTML = '';
+            videoData.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+            
+            // Reset progress bars
+            const progressFills = document.querySelectorAll('#videoPlayer .progress-fill');
+            progressFills.forEach((fill, index) => {
+                fill.style.width = index === 0 ? '0%' : '0%';
+            });
+            
+            // Start progress bar
+            startProgressBar();
+            
+            // Setup swipe events
+            setupVideoSwipe();
+        }
+        
+        // Video progress bar
+        let progressInterval;
+        
+        function startProgressBar() {
+            clearInterval(progressInterval);
+            
+            const currentFill = document.querySelectorAll('#videoPlayer .progress-fill')[0];
+            currentFill.style.width = '0%';
+            
+            progressInterval = setInterval(function() {
+                let width = parseFloat(currentFill.style.width) || 0;
+                if (width < 100) {
+                    width += 0.5;
+                    currentFill.style.width = width + '%';
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+        }
+        
+        // Close video player
+        function closeVideoPlayer() {
+            document.getElementById('videoPlayer').style.display = 'none';
+            clearInterval(progressInterval);
+        }
+        
+        // Clear history
+        function clearHistory() {
+            if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử xem?')) {
+                historyData = [];
+                localStorage.setItem('videoHistory', JSON.stringify(historyData));
+                renderHistoryList();
+            }
+        }
+        
+        // Setup swipe events for video player
+        function setupVideoSwipe() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            let startY;
+            
+            videoPlayer.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            videoPlayer.addEventListener('touchmove', (e) => {
+                if (!startY) return;
+                
+                const y = e.touches[0].clientY;
+                const diff = y - startY;
+                
+                // Prevent scrolling if swiping up/down on video
+                if (Math.abs(diff) > 10) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            videoPlayer.addEventListener('touchend', (e) => {
+                if (!startY) return;
+                
+                const y = e.changedTouches[0].clientY;
+                const diff = y - startY;
+                
+                // Swipe down (close player)
+                if (diff > 50) {
+                    closeVideoPlayer();
+                }
+                
+                startY = null;
+            }, { passive: true });
+        }
+    </script>
+</body>
+</html>
