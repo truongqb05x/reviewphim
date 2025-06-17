@@ -1,81 +1,96 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 import mysql.connector
 from mysql.connector import Error
 import os
+from contextlib import contextmanager
+from typing import Optional, List, Dict, Any
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')  # ✅ Sửa chỗ này
-
-# Thư mục chứa file HTML
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 HTML_FOLDER = os.path.join(os.path.dirname(__file__), 'html')
 
-# Cấu hình kết nối MySQL
-db_config = {
+# MySQL configuration
+DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
     'password': '',
     'database': 'test'
 }
 
+@contextmanager
 def get_db_connection():
+    """Context manager for database connections."""
+    connection = None
     try:
-        connection = mysql.connector.connect(**db_config)
-        if connection.is_connected():
-            return connection
+        connection = mysql.connector.connect(**DB_CONFIG)
+        yield connection
     except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
+        print(f"Database connection error: {e}")
+        yield None
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
+
+def execute_query(query: str, params: tuple = (), dictionary: bool = True) -> Optional[List[Dict]]:
+    """Execute database query with error handling."""
+    with get_db_connection() as conn:
+        if not conn:
+            return None
+        try:
+            cursor = conn.cursor(dictionary=dictionary)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
+        except Error as e:
+            print(f"Query execution error: {e}")
+            return None
 
 @app.route('/videos', methods=['GET'])
 def get_videos():
-    connection = get_db_connection()
-    if not connection:
-        return jsonify({'error': 'Database connection failed'}), 500
-
-    try:
-        cursor = connection.cursor(dictionary=True)
-        
-        query = """
-        SELECT 
-            v.video_id,
-            v.title,
-            v.description,
-            v.video_url,
-            GROUP_CONCAT(t.name) as tags
+    """Fetch videos with optional tag filtering."""
+    tag = request.args.get('tag')
+    query = """
+        SELECT v.video_id, v.title, v.description, v.video_url,
+               GROUP_CONCAT(t.name) as tags
         FROM videos v
         LEFT JOIN video_tags vt ON v.video_id = vt.video_id
-        LEFT JOIN tags t ON vt.tag_id = t.tag_id
-        GROUP BY v.video_id, v.title, v.description, v.video_url
-        """
-        
-        cursor.execute(query)
-        videos = cursor.fetchall()
-        
-        for video in videos:
-            video['tags'] = video['tags'].split(',') if video['tags'] else []
-        
-        return jsonify({'videos': videos}), 200
+        LEFT JOIN tags t ON vt.tag_id = t.id
+    """
     
-    except Error as e:
-        print(f"Error executing query: {e}")
+    params = (tag,) if tag else ()
+    if tag:
+        query += " WHERE t.name = %s"
+    query += " GROUP BY v.video_id, v.title, v.description, v.video_url"
+
+    videos = execute_query(query, params)
+    if videos is None:
         return jsonify({'error': 'Failed to fetch videos'}), 500
-    
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+
+    # Process tags
+    for video in videos:
+        video['tags'] = video['tags'].split(',') if video['tags'] else []
+
+    return jsonify({'videos': videos}), 200
 
 @app.route('/')
 def serve_index():
+    """Serve the main index page."""
     return send_from_directory(HTML_FOLDER, 'index.html')
 
-@app.route('/<path:filename>')
-def serve_html(filename):
-    if filename.endswith('.html'):
-        try:
-            return send_from_directory(HTML_FOLDER, filename)
-        except FileNotFoundError:
-            return jsonify({'error': 'Page not found'}), 404
-    return jsonify({'error': 'Invalid file type'}), 400
+@app.route('/trending')
+def khampha():
+    return send_from_directory(HTML_FOLDER, 'khampha.html')
+@app.route('/api/tags', methods=['GET'])
+def get_tags():
+    """Fetch all tags with their image URLs."""
+    tags = execute_query("SELECT name, image_url FROM tags")
+    if tags is None:
+        return jsonify({'error': 'Failed to fetch tags'}), 500
+    
+    return jsonify([
+        {'name': tag['name'], 'image_url': tag['image_url'] or ''} 
+        for tag in tags
+    ]), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

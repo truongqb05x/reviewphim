@@ -3,7 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineShorts - Review phim dạng short video</title>
+    
+    <!-- Title hiển thị trên tab trình duyệt -->
+    <title>CineShorts - Nền tảng review phim ngắn | Trailer & Đánh giá nhanh</title>
+    
+    <!-- Thẻ mô tả nội dung trang -->
+    <meta name="description" content="CineShorts là nền tảng xem video review phim dạng ngắn hấp dẫn, cập nhật trailer, đánh giá nhanh các bộ phim hot nhất hiện nay.">
+
+    <!-- Từ khóa liên quan để SEO -->
+    <meta name="keywords" content="review phim, video ngắn, short review, trailer phim, đánh giá phim, CineShorts">
+
+    <!-- Tác giả (không bắt buộc nhưng tốt cho nhận diện thương hiệu) -->
+    <meta name="author" content="CineShorts Team">
+
+    <!-- Open Graph để chia sẻ đẹp trên Facebook và mạng xã hội -->
+    <meta property="og:title" content="CineShorts - Nền tảng review phim ngắn hấp dẫn">
+    <meta property="og:description" content="Xem review phim, trailer và đánh giá nhanh chỉ trong vài phút tại CineShorts.">
+    <meta property="og:image" content="https://yourdomain.com/static/img/logo.png">
+    <meta property="og:url" content="https://yourdomain.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CineShorts - Review phim dạng short video">
+    <meta name="twitter:description" content="Tổng hợp video review phim nhanh, ngắn gọn, thu hút. Cập nhật phim hot mỗi ngày.">
+    <meta name="twitter:image" content="https://yourdomain.com/static/img/logo.png">
+
+    <!-- Favicon và các liên kết khác -->
+    <link rel="shortcut icon" href="../static/img/logo.png" type="image/x-icon">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="../static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -24,11 +53,11 @@
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <span>Trang chủ</span>
         </div>
-        <div class="nav-item">
+        <a href="/trending" class="nav-item">
             <div class="nav-icon"><i class="fas fa-compass"></i></div>
             <span>Khám phá</span>
-        </div>
-        <div class="nav-item">
+        </a>
+        <!-- <div class="nav-item">
             <div class="nav-icon"><i class="fas fa-plus-square"></i></div>
             <span>Tạo video</span>
         </div>
@@ -39,17 +68,17 @@
         <div class="nav-item">
             <div class="nav-icon"><i class="fas fa-user"></i></div>
             <span>Tôi</span>
-        </div>
+        </div> -->
     </nav>
     <!-- nút chuyển -->
-     <div class="navigation-buttons">
-    <div class="nav-button up-button">
-        <i class="fas fa-chevron-up"></i>
+    <div class="navigation-buttons">
+        <div class="nav-button up-button">
+            <i class="fas fa-chevron-up"></i>
+        </div>
+        <div class="nav-button down-button">
+            <i class="fas fa-chevron-down"></i>
+        </div>
     </div>
-    <div class="nav-button down-button">
-        <i class="fas fa-chevron-down"></i>
-    </div>
-</div>
 <script>
     // Load YouTube IFrame API
     var tag = document.createElement('script');
@@ -70,7 +99,6 @@
     // YouTube IFrame API will call this when it's ready
     window.onYouTubeIframeAPIReady = function() {
         youtubeApiReady = true;
-        // nếu đã render iframe xong thì khởi tạo
         if (document.querySelectorAll('.youtube-video').length > 0) {
             initializePlayers();
         }
@@ -116,7 +144,14 @@
     // Function to fetch videos from API and render them
     async function fetchAndRenderVideos() {
         try {
-            const response = await fetch('/videos');
+            // Lấy tag từ URL query parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const tag = urlParams.get('tag');
+            
+            // Xây dựng URL API với tag nếu có
+            const apiUrl = tag ? `/videos?tag=${encodeURIComponent(tag)}` : '/videos';
+            
+            const response = await fetch(apiUrl);
             if (!response.ok) {
                 throw new Error('Failed to fetch videos');
             }
@@ -198,7 +233,6 @@
                 videoFeed.appendChild(videoContainer);
             });
 
-            // Attach play button event listeners (will be re-bound in onPlayerReady)
             document.querySelectorAll('.play-button').forEach(button => {
                 const idx = parseInt(button.getAttribute('data-video-index'));
                 button.addEventListener('click', () => handlePlayButtonClick(idx));
@@ -206,14 +240,10 @@
 
             if (youtubeApiReady) {
                 initializePlayers();
-                        // 5. Thêm phần khởi tạo nút điều hướng ở ĐÂY
-        // Ẩn nút up khi ở video đầu tiên
-        document.querySelector('.up-button').style.display = 'none';
-        // Ẩn nút down nếu chỉ có 1 video
-        if (data.videos.length <= 1) {
-            document.querySelector('.down-button').style.display = 'none';
-        }
-
+                document.querySelector('.up-button').style.display = 'none';
+                if (data.videos.length <= 1) {
+                    document.querySelector('.down-button').style.display = 'none';
+                }
             }
         } catch (error) {
             console.error('Error fetching videos:', error);
@@ -226,7 +256,6 @@
         const playButton = document.querySelector(`.play-button[data-video-index="${index}"]`);
         if (playButton) playButton.classList.remove('hidden');
 
-        // auto-play first video after ready
         if (index === 0 && players[0]) {
             setTimeout(() => {
                 players[0].playVideo();
@@ -308,7 +337,6 @@
         isScrolling = true;
         lastScrollTime = now;
 
-        // Pause all videos
         players.forEach((player, i) => {
             if (player) {
                 player.pauseVideo();
@@ -317,7 +345,6 @@
             }
         });
 
-        // Animate containers
         videoContainers.forEach((container, i) => {
             container.style.transition = 'transform 0.3s ease';
             if (i === newIndex) {
@@ -340,13 +367,11 @@
             isScrolling = false;
             videoContainers.forEach(c => c.style.transition = '');
             updateProgressBars();
-                    // Ẩn/hiện nút điều hướng khi ở video đầu/cuối
-        const upButton = document.querySelector('.up-button');
-        const downButton = document.querySelector('.down-button');
-        
-        upButton.style.display = currentVideoIndex === 0 ? 'none' : 'flex';
-        downButton.style.display = currentVideoIndex === players.length - 1 ? 'none' : 'flex';
-
+            const upButton = document.querySelector('.up-button');
+            const downButton = document.querySelector('.down-button');
+            
+            upButton.style.display = currentVideoIndex === 0 ? 'none' : 'flex';
+            downButton.style.display = currentVideoIndex === players.length - 1 ? 'none' : 'flex';
         }, 300);
     }
 
@@ -379,21 +404,19 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchAndRenderVideos();
-// Xử lý sự kiện click nút điều hướng
-document.querySelector('.up-button').addEventListener('click', () => {
-    switchToVideo(currentVideoIndex - 1);
-});
+        document.querySelector('.up-button').addEventListener('click', () => {
+            switchToVideo(currentVideoIndex - 1);
+        });
 
-document.querySelector('.down-button').addEventListener('click', () => {
-    switchToVideo(currentVideoIndex + 1);
-});
-        // Scroll / touch
+        document.querySelector('.down-button').addEventListener('click', () => {
+            switchToVideo(currentVideoIndex + 1);
+        });
+
         window.addEventListener('wheel', handleScroll, { passive: false });
         window.addEventListener('touchstart', handleScroll, { passive: false });
         window.addEventListener('touchmove', handleScroll, { passive: false });
         window.addEventListener('touchend', handleScroll, { passive: false });
 
-        // Keyboard
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowDown') {
                 switchToVideo(currentVideoIndex + 1);
