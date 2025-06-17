@@ -6,7 +6,9 @@ CREATE TABLE videos (
     video_url VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     created_at DATETIME NOT NULL DEFAULT NOW()
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
+ALTER TABLE videos
+ADD COLUMN duration INT NOT NULL DEFAULT 0
+COMMENT 'Total duration of the video in seconds';
 -- Tạo bảng tags
 CREATE TABLE tags (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -21,4 +23,25 @@ CREATE TABLE video_tags (
     PRIMARY KEY (video_id, tag_id),
     FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Tạo bảng sessions
+CREATE TABLE sessions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT NOW(),
+    UNIQUE (session_id)
+) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Tạo bảng video_views
+CREATE TABLE video_views (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    video_id BIGINT NOT NULL,
+    view_start DATETIME NOT NULL DEFAULT NOW(),
+    watch_duration INT NOT NULL DEFAULT 0,
+    is_completed TINYINT(1) NOT NULL DEFAULT 0,
+    FOREIGN KEY (session_id) REFERENCES sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    INDEX idx_session_video (session_id, video_id)
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

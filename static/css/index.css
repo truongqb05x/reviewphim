@@ -59,18 +59,16 @@
             left: 0;
             border: none;
         }
-
-        .navigation-buttons {
-            position: fixed;
-            left: 20px;
-            /* Đổi từ right sang left */
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 50;
-        }
+.navigation-buttons {
+    position: fixed;
+    right: 20px; /* Chuyển từ left sang right */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 50;
+}
 
         .nav-button {
             width: 44px;
@@ -153,6 +151,8 @@
             left: 20px;
             max-width: 70%;
             z-index: 10;
+            transition: opacity 0.5s ease;
+
         }
 
         .video-title {
@@ -296,3 +296,8 @@ a.nav-item {
                 font-size: 10px;
 
 }
+
+        .video-info.hidden {
+            opacity: 0;
+        }
+        
