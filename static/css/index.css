@@ -40,25 +40,47 @@
             overflow: hidden;
         }
 
-        .video-container {
-            position: relative;
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+      .video-container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    background-color: #000; /* Thêm nền đen để tránh flash trắng */
+    overflow: hidden;
+}
 
-        .youtube-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            border: none;
-        }
+.youtube-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: none;
+    background-color: #000; /* Đảm bảo nền đen khi chưa load video */
+    visibility: visible; /* Luôn hiển thị */
+    opacity: 1; /* Đảm bảo hiển thị đầy đủ */
+    transition: opacity 0.3s ease; /* Hiệu ứng mờ nhẹ khi chuyển đổi */
+}
+
+/* Khi video đang tải hoặc có vấn đề */
+.youtube-video.loading {
+    opacity: 0;
+}
+
+/* Khi video đã sẵn sàng */
+.youtube-video.ready {
+    opacity: 1;
+}
+
+.play-button {
+    position: absolute;
+    z-index: 10;
+    /* Các style khác giữ nguyên */
+}
 .navigation-buttons {
     position: fixed;
     right: 20px; /* Chuyển từ left sang right */

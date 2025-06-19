@@ -15,6 +15,16 @@ CREATE TABLE tags (
     name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     image_url VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+INSERT IGNORE INTO tags (name, image_url) VALUES 
+('Tâm lý', '/static/img/tamly.png'),
+('Tình cảm', '/static/img/tinhyeu.png'),
+('Kinh dị', '/static/img/kinhdi.png'),
+('Khoa học viễn tưởng', '/static/img/khoahocvientuong.png'),
+('Trinh thám', '/static/img/trinhtham.png'),
+('Học đường', '/static/img/hocduong.png'),
+('Hành động', '/static/img/hanhdong.png'),
+('Phiêu lưu', '/static/img/phieuluu.png'),
+('Hài', '/static/img/hai.png');
 
 -- Tạo bảng liên kết video_tags
 CREATE TABLE video_tags (

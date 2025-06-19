@@ -103,77 +103,91 @@ def track_view():
 
 @app.route('/videos', methods=['GET'])
 def get_videos():
-    """Fetch videos sorted by view count, excluding those watched >300s by the user."""
     tag = request.args.get('tag')
     session_id = request.cookies.get('session_id')
 
-    # Base query to fetch videos with tags and view count
+    # 1. Phần SELECT + các JOIN chung
     query = """
         SELECT 
             v.video_id, 
             v.title, 
             v.description, 
             v.video_url,
-            GROUP_CONCAT(t.name) as tags,
-            COUNT(DISTINCT vv.session_id) as view_count
+            GROUP_CONCAT(DISTINCT t.name) AS tags,
+            COUNT(DISTINCT vv.session_id) AS view_count
         FROM videos v
         LEFT JOIN video_tags vt ON v.video_id = vt.video_id
         LEFT JOIN tags t ON vt.tag_id = t.id
         LEFT JOIN video_views vv ON v.video_id = vv.video_id
     """
 
-    # Subquery to check watch duration for the current user
-    query += """
+    params = []
+
+    # 2. Phần sub‑query user_views (chỉ thêm WHERE session_id nếu có session_id)
+    if session_id:
+        query += """
         LEFT JOIN (
-            SELECT video_id, MAX(watch_duration) as max_watch_duration
+            SELECT video_id, MAX(watch_duration) AS max_watch_duration
             FROM video_views
             WHERE session_id = %s
             GROUP BY video_id
         ) user_views ON v.video_id = user_views.video_id
-    """
-
-    params = [session_id] if session_id else []
-    
-    # Add tag filter if provided
-    if tag:
-        query += " WHERE t.name = %s"
-        params.append(tag)
-        query += " AND (user_views.max_watch_duration IS NULL OR user_views.max_watch_duration <= 300)"
+        """
+        params.append(session_id)
     else:
-        query += " WHERE (user_views.max_watch_duration IS NULL OR user_views.max_watch_duration <= 300)"
-    
+        query += """
+        LEFT JOIN (
+            SELECT video_id, MAX(watch_duration) AS max_watch_duration
+            FROM video_views
+            GROUP BY video_id
+        ) user_views ON v.video_id = user_views.video_id
+        """
+
+    # 3. Gom WHERE clauses
+    where_clauses = []
+    if tag:
+        where_clauses.append("t.name = %s")
+        params.append(tag)
+
+    # Luôn lọc những video user chưa xem quá 300s
+    where_clauses.append(
+        "(user_views.max_watch_duration IS NULL OR user_views.max_watch_duration <= 300)"
+    )
+
+    if where_clauses:
+        query += " WHERE " + " AND ".join(where_clauses)
+
+    # 4. Phần GROUP BY + ORDER BY
     query += """
         GROUP BY v.video_id, v.title, v.description, v.video_url
         ORDER BY view_count DESC
     """
 
+    # 5. Execute
     videos = execute_query(query, tuple(params))
     if videos is None:
         return jsonify({'error': 'Failed to fetch videos'}), 500
 
-    # Process tags
+    # 6. Xử lý tags, loại bỏ view_count khỏi output
     for video in videos:
         video['tags'] = video['tags'].split(',') if video['tags'] else []
-        # Remove view_count from response to keep output clean
         del video['view_count']
 
-    # Create and save session ID if not exists
+    # 7. Tạo session mới nếu chưa có
     if not session_id:
         session_id = str(uuid.uuid4())
         save_session(session_id)
 
-    # Create response and set cookie if needed
+    # 8. Trả response và set cookie
     response = make_response(jsonify({'videos': videos}), 200)
     if not request.cookies.get('session_id'):
         response.set_cookie(
-            key='session_id',
-            value=session_id,
-            max_age=31536000 * 10,  # 10 years
+            'session_id', session_id,
+            max_age=31536000 * 10,
             httponly=True,
-            secure=False,  # Set to True if using HTTPS
+            secure=False,
             samesite='Lax'
         )
-
     return response
 
 @app.route('/check-session')
