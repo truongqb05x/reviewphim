@@ -104,9 +104,10 @@ def track_view():
 @app.route('/videos', methods=['GET'])
 def get_videos():
     tag = request.args.get('tag')
+    exclude_id = request.args.get('exclude_id')
     session_id = request.cookies.get('session_id')
 
-    # 1. Phần SELECT + các JOIN chung
+    # Base query
     query = """
         SELECT 
             v.video_id, 
@@ -123,7 +124,7 @@ def get_videos():
 
     params = []
 
-    # 2. Phần sub‑query user_views (chỉ thêm WHERE session_id nếu có session_id)
+    # User views subquery
     if session_id:
         query += """
         LEFT JOIN (
@@ -143,13 +144,14 @@ def get_videos():
         ) user_views ON v.video_id = user_views.video_id
         """
 
-    # 3. Gom WHERE clauses
+    # WHERE clauses
     where_clauses = []
     if tag:
         where_clauses.append("t.name = %s")
         params.append(tag)
-
-    # Luôn lọc những video user chưa xem quá 300s
+    if exclude_id:
+        where_clauses.append("v.video_id != %s")
+        params.append(exclude_id)
     where_clauses.append(
         "(user_views.max_watch_duration IS NULL OR user_views.max_watch_duration <= 300)"
     )
@@ -157,28 +159,29 @@ def get_videos():
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
 
-    # 4. Phần GROUP BY + ORDER BY
+    # Group and order
     query += """
         GROUP BY v.video_id, v.title, v.description, v.video_url
         ORDER BY view_count DESC
+        LIMIT 1
     """
 
-    # 5. Execute
+    # Execute
     videos = execute_query(query, tuple(params))
     if videos is None:
-        return jsonify({'error': 'Failed to fetch videos'}), 500
+        return jsonify({'error': 'Failed to fetch video'}), 500
 
-    # 6. Xử lý tags, loại bỏ view_count khỏi output
+    # Process tags
     for video in videos:
         video['tags'] = video['tags'].split(',') if video['tags'] else []
         del video['view_count']
 
-    # 7. Tạo session mới nếu chưa có
+    # Create session if none exists
     if not session_id:
         session_id = str(uuid.uuid4())
         save_session(session_id)
 
-    # 8. Trả response và set cookie
+    # Response
     response = make_response(jsonify({'videos': videos}), 200)
     if not request.cookies.get('session_id'):
         response.set_cookie(
