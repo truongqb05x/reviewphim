@@ -100,98 +100,108 @@ def track_view():
     if track_video_view(session_id, video_id, watch_duration, is_completed):
         return jsonify({'message': 'View tracked successfully'}), 200
     return jsonify({'error': 'Failed to track view'}), 500
-
 @app.route('/videos', methods=['GET'])
 def get_videos():
-    tag = request.args.get('tag')
-    exclude_id = request.args.get('exclude_id')
-    session_id = request.cookies.get('session_id')
+    try:
+        tag = request.args.get('tag');
+        exclude_id = request.args.get('exclude_id');
+        session_id = request.cookies.get('session_id');
 
-    # Base query
-    query = """
+        # Base query
+        query = """
         SELECT 
             v.video_id, 
             v.title, 
             v.description, 
             v.video_url,
             GROUP_CONCAT(DISTINCT t.name) AS tags,
-            COUNT(DISTINCT vv.session_id) AS view_count
+            COUNT(DISTINCT vv.video_id) AS view_count
         FROM videos v
         LEFT JOIN video_tags vt ON v.video_id = vt.video_id
         LEFT JOIN tags t ON vt.tag_id = t.id
         LEFT JOIN video_views vv ON v.video_id = vv.video_id
-    """
-
-    params = []
-
-    # User views subquery
-    if session_id:
-        query += """
-        LEFT JOIN (
-            SELECT video_id, MAX(watch_duration) AS max_watch_duration
-            FROM video_views
-            WHERE session_id = %s
-            GROUP BY video_id
-        ) user_views ON v.video_id = user_views.video_id
-        """
-        params.append(session_id)
-    else:
-        query += """
-        LEFT JOIN (
-            SELECT video_id, MAX(watch_duration) AS max_watch_duration
-            FROM video_views
-            GROUP BY video_id
-        ) user_views ON v.video_id = user_views.video_id
         """
 
-    # WHERE clauses
-    where_clauses = []
-    if tag:
-        where_clauses.append("t.name = %s")
-        params.append(tag)
-    if exclude_id:
-        where_clauses.append("v.video_id != %s")
-        params.append(exclude_id)
-    where_clauses.append(
-        "(user_views.max_watch_duration IS NULL OR user_views.max_watch_duration <= 300)"
-    )
+        params = []
 
-    if where_clauses:
-        query += " WHERE " + " AND ".join(where_clauses)
+        # User views subquery
+        if session_id:
+            query += """
+            LEFT JOIN (
+                SELECT video_id, MAX(watch_duration) AS max_duration
+                FROM video_views
+                WHERE session_id = %s
+                GROUP BY video_id
+            ) user_views ON v.video_id = user_views.video_id
+            """
+            params.append(session_id)
+        else:
+            query += """
+            LEFT JOIN (
+                SELECT video_id, MAX(watch_duration) AS max_duration
+                FROM video_views
+                GROUP BY video_id
+            ) user_views ON v.video_id = user_views.video_id
+            """
 
-    # Group and order
-    query += """
-        GROUP BY v.video_id, v.title, v.description, v.video_url
-        ORDER BY view_count DESC
-        LIMIT 1
-    """
+        # WHERE clauses
+        where_clauses = []
+        if tag:
+            where_clauses.append("t.name = %s")
+            params.append(tag)
+        if exclude_id:
+            try:
+                exclude_id = int(exclude_id)
+                where_clauses.append("v.video_id != %s")
+                params.append(exclude_id)
+            except ValueError:
+                print(f"Invalid exclude_id: {exclude_id}")
+                return jsonify({'error': 'Invalid exclude_id'}), 400
 
-    # Execute
-    videos = execute_query(query, tuple(params))
-    if videos is None:
-        return jsonify({'error': 'Failed to fetch video'}), 500
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
 
-    # Process tags
-    for video in videos:
-        video['tags'] = video['tags'].split(',') if video['tags'] else []
-        del video['view_count']
+        # Group by and order
+        query += """
+            GROUP BY v.video_id, v.title, v.description, v.video_url
+            ORDER BY RAND()
+            LIMIT 10
+        """  # Tăng LIMIT lên 10 để tăng cơ hội
 
-    # Create session if none exists
-    if not session_id:
-        session_id = str(uuid.uuid4())
-        save_session(session_id)
+        # Execute
+        videos = execute_query(query, tuple(params))
+        print(f"Query executed: {query}, params: {params}, result: {videos}")
+        if videos is None or not videos:
+            print(f"No valid videos found for query: {query}, params: {params}")
+            return jsonify({'error': 'No valid videos available'}), 404
 
-    # Response
-    response = make_response(jsonify({'videos': videos}), 200)
-    if not request.cookies.get('session_id'):
-        response.set_cookie(
-            'session_id', session_id,
-            max_age=31536000 * 10,
-            httponly=True,
-            secure=False,
-            samesite='Lax'
-        )
-    return response
+        # Process tags
+        for video in videos:
+            video['tags'] = video['tags'].split(',') if video['tags'] else []
+            video['video_id'] = str(video['video_id'])
+            del video['view_count']
+
+        print(f"Returning videos: {videos}")
+
+        # Create session if none exists
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            save_session(session_id)
+
+        # Response
+        response = make_response(jsonify({'videos': videos}), 200)
+        if not request.cookies.get('session_id'):
+            response.set_cookie(
+                'session_id', session_id,
+                max_age=31536000 * 10,
+                httponly=True,
+                secure=True,
+                samesite='Lax'
+            )
+        return response
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return jsonify({'error': 'Server error'}), 500
 
 @app.route('/check-session')
 def check_session():
